@@ -8,6 +8,7 @@ body {
   margin: 0;
   background-color: #edeff1;
   font-family: sans-serif;
+  overflow-x: hidden;
 }
 
 * {

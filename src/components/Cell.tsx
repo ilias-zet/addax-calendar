@@ -1,5 +1,7 @@
 import styled from "styled-components";
 import Task from "./Task";
+import { Task as ITask } from "../types";
+import { useAppSelector } from "../hooks/redux-hooks";
 
 const Container = styled.div<{ $disabled: boolean, $isCurrent: boolean }>`
   display: grid;
@@ -10,6 +12,8 @@ const Container = styled.div<{ $disabled: boolean, $isCurrent: boolean }>`
   background-color: #e3e5e6;
   min-width: 0;
   min-height: 0;
+  width: 100%;
+  height: 100%;
 
   ${({$disabled}) =>  $disabled ? 'background-color: #ebebeb;' : 'border: 1px solid #cecece;'}
   ${({$isCurrent}) => $isCurrent ? 'border: 2px solid red' : ''}
@@ -50,20 +54,23 @@ const CardsNumber = styled.span`
   color: #858585;
 `;
 
-const DragArea = styled.div`
+const DragArea = styled.div<{ $showBorder?: boolean }>`
   display: flex;
   flex-direction: column;
   width: 100%;
+  min-width: 0;
+  min-height: 0;
   border-radius: 4px;
   overflow-y: auto;
   gap: 2px;
+  ${({ $showBorder }) => $showBorder ? 'border: 1px dashed red;' : ''}
 `;
 
 interface CellProps {
   day: number;
   isCurrent?: boolean;
   disabled?: boolean;
-  tasks?: string[];
+  tasks?: ITask[];
 }
 
 function Cell ({
@@ -72,14 +79,16 @@ function Cell ({
   disabled = false,
   tasks = [],
 }: CellProps) {
+  const draggingTask = useAppSelector(state => state.dragging.task);
+
   return (
     <Container $disabled={disabled} $isCurrent={isCurrent}>
       <Heading>
         <Day $isCurrent={isCurrent}>{day}</Day>
         { !disabled && tasks.length ? <CardsNumber>{tasks.length} card(s)</CardsNumber> : null }
       </Heading>
-        <DragArea>
-          {tasks.map(task => <Task key={task}>{task}</Task>)}
+        <DragArea $showBorder={draggingTask && !disabled}>
+          { tasks.map((task) => <Task key={task.id} task={task}></Task>) }
         </DragArea>
     </Container>
   );

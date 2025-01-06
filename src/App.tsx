@@ -3,6 +3,8 @@ import { device } from './breakpoints';
 import Cell from './components/Cell';
 import useCalendar from './hooks/useCalendar';
 import { getDateString } from './utils';
+import { useState } from 'react';
+import { Task } from './types';
 
 const Container = styled.div`
   display: grid;
@@ -76,7 +78,70 @@ const CurrentMonth = styled.span`
 `;
 
 const tasks = {
-  [getDateString(new Date())]: ['kekdjaiowufdkauwhdjiawdawdoij', 'lol', 'awdawdawuhidyaihowjkda', 'awdkhjawkdawdlkamnjwda', 'aiojwhuydggawfjoahlwiudajwd'],
+  [getDateString(new Date())]: [
+    {
+      id: '1',
+      title: 'kekdjaiowufdkauwhdjiawdawdoij',
+      description: ''
+    },
+    {
+      id: '2',
+      title: 'awdawdawuhidyaihowjkda',
+      description: ''
+    },
+    {
+      id: '3',
+      title: 'awdkhjawkdawdlkamnjwda',
+      description: ''
+    },
+    {
+      id: '4',
+      title: 'lol',
+      description: ''
+    },
+    {
+      id: '5',
+      title: 'aiojwhuydggawfjoahlwiudajwd',
+      description: ''
+    },
+    {
+      id: '6',
+      title: 'awdawdawuhidyaihowjkda',
+      description: ''
+    },
+  ],
+  [getDateString(new Date(2025, 0, 1))]: [
+    {
+      id: '1',
+      title: 'kekdjaiowufdkauwhdjiawdawdoij',
+      description: ''
+    },
+    {
+      id: '2',
+      title: 'awdawdawuhidyaihowjkda',
+      description: ''
+    },
+    {
+      id: '3',
+      title: 'awdkhjawkdawdlkamnjwda',
+      description: ''
+    },
+    {
+      id: '4',
+      title: 'lol',
+      description: ''
+    },
+    {
+      id: '5',
+      title: 'aiojwhuydggawfjoahlwiudajwd',
+      description: ''
+    },
+    {
+      id: '6',
+      title: 'awdawdawuhidyaihowjkda',
+      description: ''
+    },
+  ],
 }
 
 function App() {
@@ -89,9 +154,7 @@ function App() {
           <Button onClick={showPrev}>▲</Button>
           <Button onClick={showNext}>▼</Button>
         </ButtonsWrapper>
-        <CurrentMonth>
-          {title}
-        </CurrentMonth>
+        <CurrentMonth>{title}</CurrentMonth>
       </Header>
       <DaysOfWeek>
         {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((day) => <span key={day}>{day}</span>)}

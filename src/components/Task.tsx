@@ -1,50 +1,62 @@
-import { ReactNode } from "react";
-import Draggable from "react-draggable";
 import styled from "styled-components";
+import { useAppDispatch } from "../hooks/redux-hooks";
+import { Task as ITask } from '../types';
+import { setDragTask } from "../features/draggingSlice";
+import { useRef } from "react";
 
 const Container = styled.div`
-  display: flex;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  min-height: 24px;
   align-items: center;
   width: 100%;
-  min-height: 20px;
   background-color: #ffffff;
   font-size: 13px;
   line-height: 1;
   border-radius: 4px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  align-content: center;
 `;
 
 const GrabArea = styled.div`
   cursor: grab;
-  min-width: 20px;
-  min-height: 20px;
-  font-size: 16px;
+  width: 24px;
+  height: 24px;
+  font-size: 18px;
   color: #858585;
   text-align: center;
   align-content: center;
 `;
 
-const TaskText = styled.div`
+const TaskTitle = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
+  height: 100%;
+  align-content: center;
 `;
 
 interface TaskProps {
-  children: ReactNode;
+  task: ITask;
 }
 
-function Task({ children }: TaskProps) {
+function Task({ task }: TaskProps) {
+  const dispatch = useAppDispatch();
+  const ref = useRef<HTMLDivElement>(null);
 
   return (
-    <Draggable>
-      <Container>
-        <GrabArea>⠿</GrabArea>
-        <TaskText>{children}</TaskText>
-      </Container>
-    </Draggable>
+    <Container
+      ref={ref}
+      draggable={true}
+      onDragStartCapture={() => dispatch(setDragTask(task))}
+      onDragEndCapture={() => dispatch(setDragTask(null))}
+    >
+      <GrabArea>⠿</GrabArea>
+      <TaskTitle
+        draggable={true}
+        onDragStart={e => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+      >{task.title}</TaskTitle>
+    </Container>
   );
 }
 

@@ -1,9 +1,15 @@
 import styled from "styled-components";
 import Task from "./Task";
-import { Task as ITask } from "../types";
-import { useAppSelector } from "../hooks/redux-hooks";
+import { useAppDispatch, useAppSelector } from "../hooks/redux-hooks";
+import { Fragment } from "react/jsx-runtime";
+import { setDragOverCell, setDragToIndex } from "../features/draggingSlice";
+import { useRef } from "react";
+import TaskSpace from "./TaskSpace";
+import { isMovementAllowed } from "../utils";
+import { moveTask } from "../features/taskListSlice";
 
 const Container = styled.div<{ $disabled: boolean, $isCurrent: boolean }>`
+  position: relative;
   display: grid;
   grid-template-rows: 24px 1fr;
   padding: 4px;
@@ -14,10 +20,10 @@ const Container = styled.div<{ $disabled: boolean, $isCurrent: boolean }>`
   min-height: 0;
   width: 100%;
   height: 100%;
+  transition: border 0.5s;
 
-  ${({$disabled}) =>  $disabled ? 'background-color: #ebebeb;' : 'border: 1px solid #cecece;'}
-  ${({$isCurrent}) => $isCurrent ? 'border: 2px solid red' : ''}
-   
+  ${({ $disabled }) =>  $disabled ? 'background-color: #ebebeb;' : 'border: 1px solid #cecece;'}
+  ${({ $isCurrent }) => $isCurrent ? 'border: 2px solid red;' : ''}
 `;
 
 const Heading = styled.div`
@@ -28,7 +34,7 @@ const Heading = styled.div`
   padding-right: 4px;
 `;
 
-const Day = styled.div<{ $isCurrent: boolean }>`
+const Date = styled.div<{ $isCurrent: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -54,7 +60,7 @@ const CardsNumber = styled.span`
   color: #858585;
 `;
 
-const DragArea = styled.div<{ $showBorder?: boolean }>`
+const DropZone = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -62,34 +68,78 @@ const DragArea = styled.div<{ $showBorder?: boolean }>`
   min-height: 0;
   border-radius: 4px;
   overflow-y: auto;
-  gap: 2px;
-  ${({ $showBorder }) => $showBorder ? 'border: 1px dashed red;' : ''}
 `;
 
 interface CellProps {
-  day: number;
+  id: string;
+  date: number;
   isCurrent?: boolean;
   disabled?: boolean;
-  tasks?: ITask[];
 }
 
 function Cell ({
-  day,
+  id,
+  date,
   isCurrent = false,
   disabled = false,
-  tasks = [],
 }: CellProps) {
-  const draggingTask = useAppSelector(state => state.dragging.task);
+  const counterRef = useRef<number>(0);
+  const dispatch = useAppDispatch();
+  const dragToIndex = useAppSelector(state => state.dragging.toIndex);
+  const taskData = useAppSelector(state => state.dragging.taskData);
+  const taskList = useAppSelector(state => state.tasklist);
+  const tasks = taskList[id] || [];
 
   return (
     <Container $disabled={disabled} $isCurrent={isCurrent}>
       <Heading>
-        <Day $isCurrent={isCurrent}>{day}</Day>
+        <Date $isCurrent={isCurrent}>{date}</Date>
         { !disabled && tasks.length ? <CardsNumber>{tasks.length} card(s)</CardsNumber> : null }
       </Heading>
-        <DragArea $showBorder={draggingTask && !disabled}>
-          { tasks.map((task) => <Task key={task.id} task={task}></Task>) }
-        </DragArea>
+        <DropZone
+          onDragEnterCapture={(e) => {
+            e.preventDefault();
+            counterRef.current++;
+            if (counterRef.current === 1) {
+              dispatch(setDragOverCell(id));
+              dispatch(setDragToIndex(0));
+            }
+          }}
+          onDragLeave={() => {
+            counterRef.current--;
+            if (counterRef.current === 0) {
+              dispatch(setDragOverCell(null));
+            }
+          }}
+          onDragOver={(e) => {
+            e.preventDefault();
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            counterRef.current = 0;
+            dispatch(setDragOverCell(null));
+            const movementAllowed = taskData && isMovementAllowed(taskData.cellId, id, taskData.idx, dragToIndex);
+            if (movementAllowed) {
+              dispatch(moveTask({
+                fromCell: taskData.cellId,
+                toCell: id,
+                fromIdx: taskData.idx,
+                toIdx: dragToIndex,
+              }));
+            }
+          }}
+        >
+          <TaskSpace cellId={id} idx={0} />
+          {
+            tasks.map((task, idx) => (
+              <Fragment key={task.id}>
+                { idx !== 0 ? <TaskSpace cellId={id} idx={idx} /> : null }
+                <Task task={task} cellId={id} idx={idx} />
+                { idx === tasks.length - 1 ? <TaskSpace cellId={id} idx={idx + 1} /> : null }
+              </Fragment>
+            ))
+          }
+        </DropZone>
     </Container>
   );
 }

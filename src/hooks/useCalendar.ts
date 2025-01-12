@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { getDateString } from "../utils";
 
-const date = new Date();
+const currentDate = new Date();
 
 function useCalendar () {
-  const currentYear = date.getFullYear();
-  const [selectedMonth, setSelectedMonth] = useState(date.getMonth());
+  const currentYear = currentDate.getFullYear();
+  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
 
   const selectedMonthStart = new Date(currentYear, selectedMonth, 1);
   const selectedMonthEnd = new Date(currentYear, selectedMonth + 1, 0);
@@ -33,27 +33,27 @@ function useCalendar () {
     showPrev,
     days: {
       prevMonth: [...new Array(prevRest)].map((_, idx) => {
-        const day = daysInPrevMonth - (prevRest - idx - 1);
+        const date = daysInPrevMonth - (prevRest - idx - 1);
   
         return ({
-          day,
-          key: getDateString(day, selectedMonth - 1, currentYear),
+          id: getDateString(date, selectedMonth - 1, currentYear),
+          date,
           disabled: true,
         })
       }),
       selectedMonth: [...new Array(daysInSelectedMonth)].map((_, idx) => {
-        const day = idx + 1;
-        const key = getDateString(day, selectedMonth, currentYear);
+        const date = idx + 1;
+        const id = getDateString(date, selectedMonth, currentYear);
   
         return ({
-          day,
-          key,
-          isCurrent: key === getDateString(date),
+          id,
+          date,
+          isCurrent: id === getDateString(currentDate),
         })
       }),
       nextMonth: [...new Array(nextRest)].map((_, idx) => ({
-        day: idx + 1,
-        key: getDateString(idx + 1, selectedMonth + 1, currentYear),
+        id: getDateString(idx + 1, selectedMonth + 1, currentYear),
+        date: idx + 1,
         disabled: true,
       })),
     }

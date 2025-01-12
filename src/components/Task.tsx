@@ -1,10 +1,11 @@
 import styled from "styled-components";
 import { useAppDispatch } from "../hooks/redux-hooks";
 import { Task as ITask } from '../types';
-import { setDragTask } from "../features/draggingSlice";
-import { useRef } from "react";
+import { setDragTask, setDragToIndex } from "../features/draggingSlice";
 
 const Container = styled.div`
+  cursor: grab;
+  position: relative;
   display: grid;
   grid-template-columns: 24px 1fr;
   min-height: 24px;
@@ -16,8 +17,7 @@ const Container = styled.div`
   border-radius: 4px;
 `;
 
-const GrabArea = styled.div`
-  cursor: grab;
+const Grabbable = styled.div`
   width: 24px;
   height: 24px;
   font-size: 18px;
@@ -31,31 +31,45 @@ const TaskTitle = styled.div`
   text-overflow: ellipsis;
   height: 100%;
   align-content: center;
+  white-space: nowrap;
+`;
+
+const TopHalf = styled.div`
+  position: absolute;
+  height: 50%;
+  width: 100%;
+  top: 0;
+`;
+
+const BottomHalf = styled(TopHalf)`
+  top: unset;
+  bottom: 0;
 `;
 
 interface TaskProps {
+  cellId: string;
   task: ITask;
+  idx: number;
 }
 
-function Task({ task }: TaskProps) {
+function Task({ cellId, task, idx }: TaskProps) {
   const dispatch = useAppDispatch();
-  const ref = useRef<HTMLDivElement>(null);
+
+  const selectIndex = (toIdx: number) => (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    dispatch(setDragToIndex(toIdx));
+  }
 
   return (
     <Container
-      ref={ref}
       draggable={true}
-      onDragStartCapture={() => dispatch(setDragTask(task))}
-      onDragEndCapture={() => dispatch(setDragTask(null))}
+      onDragStart={() => dispatch(setDragTask({ task, cellId, idx }))}
+      onDragEnd={() => dispatch(setDragTask(null))}
     >
-      <GrabArea>⠿</GrabArea>
-      <TaskTitle
-        draggable={true}
-        onDragStart={e => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-      >{task.title}</TaskTitle>
+      <Grabbable>⠿</Grabbable>
+      <TaskTitle>{task.title}</TaskTitle>
+      <TopHalf onDragEnter={selectIndex(idx)}/>
+      <BottomHalf onDragEnter={selectIndex(idx + 1)}/>
     </Container>
   );
 }

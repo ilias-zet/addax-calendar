@@ -2,9 +2,10 @@ import styled from 'styled-components';
 import { device } from './breakpoints';
 import Cell from './components/Cell';
 import useCalendar from './hooks/useCalendar';
-import { getDateString } from './utils';
-import { useState } from 'react';
-import { Task } from './types';
+import { getTaskListFromStorage } from './utils';
+import { useAppDispatch } from './hooks/redux-hooks';
+import { useEffect } from 'react';
+import { setTaskList } from './features/taskListSlice';
 
 const Container = styled.div`
   display: grid;
@@ -77,75 +78,14 @@ const CurrentMonth = styled.span`
   color: #4e4742;
 `;
 
-const tasks = {
-  [getDateString(new Date())]: [
-    {
-      id: '1',
-      title: 'kekdjaiowufdkauwhdjiawdawdoij',
-      description: ''
-    },
-    {
-      id: '2',
-      title: 'awdawdawuhidyaihowjkda',
-      description: ''
-    },
-    {
-      id: '3',
-      title: 'awdkhjawkdawdlkamnjwda',
-      description: ''
-    },
-    {
-      id: '4',
-      title: 'lol',
-      description: ''
-    },
-    {
-      id: '5',
-      title: 'aiojwhuydggawfjoahlwiudajwd',
-      description: ''
-    },
-    {
-      id: '6',
-      title: 'awdawdawuhidyaihowjkda',
-      description: ''
-    },
-  ],
-  [getDateString(new Date(2025, 0, 1))]: [
-    {
-      id: '1',
-      title: 'kekdjaiowufdkauwhdjiawdawdoij',
-      description: ''
-    },
-    {
-      id: '2',
-      title: 'awdawdawuhidyaihowjkda',
-      description: ''
-    },
-    {
-      id: '3',
-      title: 'awdkhjawkdawdlkamnjwda',
-      description: ''
-    },
-    {
-      id: '4',
-      title: 'lol',
-      description: ''
-    },
-    {
-      id: '5',
-      title: 'aiojwhuydggawfjoahlwiudajwd',
-      description: ''
-    },
-    {
-      id: '6',
-      title: 'awdawdawuhidyaihowjkda',
-      description: ''
-    },
-  ],
-}
-
 function App() {
   const { title, showNext, showPrev, days: { prevMonth, selectedMonth, nextMonth }} = useCalendar();
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    const taskList = getTaskListFromStorage();
+    dispatch(setTaskList(taskList));
+  }, []);
 
   return (
     <Container>
@@ -160,9 +100,9 @@ function App() {
         {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((day) => <span key={day}>{day}</span>)}
       </DaysOfWeek>
       <Main>
-        {prevMonth.map(({ day, key, disabled }) => <Cell {...{day, disabled}} key={key}></Cell>)}
-        {selectedMonth.map(({ day, key, isCurrent }) => <Cell {...{day, isCurrent, tasks: tasks[key]}} key={key}></Cell>)}
-        {nextMonth.map(({ day, key, disabled }) => <Cell {...{day, disabled}} key={key}></Cell>)}
+        {prevMonth.map((props) => <Cell {...props} key={props.id}></Cell>)}
+        {selectedMonth.map((props) => <Cell {...props} key={props.id}></Cell>)}
+        {nextMonth.map((props) => <Cell {...props} key={props.id}></Cell>)}
       </Main>
     </Container>
   );

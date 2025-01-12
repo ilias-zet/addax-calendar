@@ -1,9 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import draggingReducer from "./features/draggingSlice";
+import taskListReducer from "./features/taskListSlice";
 
 export const store = configureStore({
   reducer: {
     dragging: draggingReducer,
+    tasklist: taskListReducer,
   }
 });
 

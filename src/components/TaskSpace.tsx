@@ -7,10 +7,20 @@ const Space = styled.div<{ $active: boolean }>`
   min-height: 0px;
   border: 1px dashed;
   border-radius: 4px;
-  transition: min-height 0.3s, border-color 0.5s;
+  transition: margin 0.3s, min-height 0.3s, border-color 0.5s;
+  margin: 0;
 
-  border-color: ${({ $active }) => $active ? 'blue;' : 'transparent'};
-  ${({ $active }) => $active ? 'min-height: 24px;' : ''};
+  ${({ $active, theme }) => $active
+    ? `
+      min-height: 24px;
+      border-color: ${theme.palette.primary.main};
+      margin: 2px 0;
+
+      &:first-child {
+        margin: 0 0 2px;
+      }
+    ` 
+    : 'border-color: transparent'};
 `;
 
 interface TaskSpaceProps {

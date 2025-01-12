@@ -8,13 +8,14 @@ function useCalendar () {
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
 
   const selectedMonthStart = new Date(currentYear, selectedMonth, 1);
-  const selectedMonthEnd = new Date(currentYear, selectedMonth + 1, 0);
 
   const prevMonthEnd = new Date(currentYear, selectedMonth, 0);
+  const selectedMonthEnd = new Date(currentYear, selectedMonth + 1, 0);
+
   const daysInPrevMonth = prevMonthEnd.getDate();
   const daysInSelectedMonth = selectedMonthEnd.getDate();
 
-  const selectedMonthName = selectedMonthStart.toLocaleString('default', { year: 'numeric', month: 'long' });
+  const selectedMonthAndYear = selectedMonthStart.toLocaleString('default', { year: 'numeric', month: 'long' });
 
   const prevRest = selectedMonthStart.getDay();
   const nextRest = (prevRest + daysInSelectedMonth >= 35 ? 6 : 13) - selectedMonthEnd.getDay();
@@ -28,22 +29,24 @@ function useCalendar () {
   }
 
   return {
-    title: selectedMonthName,
+    title: selectedMonthAndYear,
     showNext,
     showPrev,
     days: {
       prevMonth: [...new Array(prevRest)].map((_, idx) => {
-        const date = daysInPrevMonth - (prevRest - idx - 1);
+        const day = daysInPrevMonth - (prevRest - idx - 1);
+        const date = new Date(currentYear, selectedMonth - 1, day);
   
         return ({
-          id: getDateString(date, selectedMonth - 1, currentYear),
+          id: getDateString(date),
           date,
           disabled: true,
         })
       }),
       selectedMonth: [...new Array(daysInSelectedMonth)].map((_, idx) => {
-        const date = idx + 1;
-        const id = getDateString(date, selectedMonth, currentYear);
+        const day = idx + 1;
+        const date = new Date(currentYear, selectedMonth, day);
+        const id = getDateString(date);
   
         return ({
           id,
@@ -51,11 +54,16 @@ function useCalendar () {
           isCurrent: id === getDateString(currentDate),
         })
       }),
-      nextMonth: [...new Array(nextRest)].map((_, idx) => ({
-        id: getDateString(idx + 1, selectedMonth + 1, currentYear),
-        date: idx + 1,
-        disabled: true,
-      })),
+      nextMonth: [...new Array(nextRest)].map((_, idx) => {
+        const day = idx + 1;
+        const date = new Date(currentYear, selectedMonth + 1, day);
+
+        return ({
+          id: getDateString(date),
+          date,
+          disabled: true,
+        })}
+      ),
     }
   }
 }

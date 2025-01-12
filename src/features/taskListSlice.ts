@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { Task } from '../types'
+import { arrayMove } from '../utils';
 
 interface MoveTaskPayload {
   fromCell: string;
@@ -19,13 +20,27 @@ export const taskListSlice = createSlice({
   reducers: {
     setTaskList: (_, { payload }: PayloadAction<TaskList>) => payload,
     moveTask: (state, { payload: { fromCell, toCell, fromIdx, toIdx } }: PayloadAction<MoveTaskPayload>) => {
-      state[fromCell] = state[fromCell] || [];
-      state[toCell] = state[toCell] || [];
-      state[toCell].splice(toIdx, 0, state[fromCell][fromIdx]);
-      state[fromCell].splice(fromIdx, 1);
+      const from = state[fromCell] = state[fromCell] || [];
+      const to = state[toCell] = state[toCell] || [];
+
+      if (from === to) {
+        arrayMove<Task>(to, fromIdx, toIdx);
+      } else {
+        to.splice(toIdx, 0, from[fromIdx]);
+        from.splice(fromIdx, 1);
+      }
+    },
+    createOrUpdateTask: (state, { payload: { cellId, task } }: PayloadAction<{ cellId: string, task: Task }>) => {
+      const cell = state[cellId] = state[cellId] || [];
+      const existedTask = cell.find(t => t.id === task.id);
+      if (existedTask) {
+        Object.assign(existedTask, task);
+      } else {
+        cell.push(task);
+      }
     }
   },
 })
 
-export const { setTaskList, moveTask } = taskListSlice.actions;
+export const { setTaskList, moveTask, createOrUpdateTask } = taskListSlice.actions;
 export default taskListSlice.reducer;

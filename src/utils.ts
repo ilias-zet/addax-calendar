@@ -1,7 +1,16 @@
 import { TaskList } from "./features/taskListSlice";
 
-export const daysInMonth = (month: number, year: number): number =>
-  new Date(year, month, 0).getDate();
+export function daysInMonth(date: Date): number;
+export function daysInMonth(month: number, year: number): number ;
+export function daysInMonth(monthOrDate: number | Date, year?: number): number {
+  let date: Date;
+  if (typeof(monthOrDate) ==='object') {
+    date = new Date(monthOrDate.getFullYear(), monthOrDate.getMonth() + 1, 0);
+  } else {
+    date = new Date(year!, monthOrDate, 0);
+  }
+  return date.getDate();
+}
 
 export function getDateString(date: Date): string;
 export function getDateString(day: number, month: number, year: number): string;
@@ -39,3 +48,19 @@ export const getTaskListFromStorage = (): TaskList => {
 export const setTaskListToStorage = (taskList: TaskList) => {
   localStorage.setItem('addax-calendar-task-list', JSON.stringify(taskList));
 }
+
+export const arrayMove = <T>(arr: T[], fromIdx: number, toIdx: number) => {
+  if (fromIdx === toIdx) return;
+  const direction = fromIdx - toIdx;
+  const resultIdx = direction < 0 ? toIdx - 1 : toIdx;
+  const element = arr[fromIdx];
+  arr.splice(fromIdx, 1);
+  arr.splice(resultIdx, 0, element);
+}
+
+export const generateId = () => {
+  const S4 = () => (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+  return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+}
+
+export const isWhitespace = (str: string) =>  /^\s*$/.test(str);

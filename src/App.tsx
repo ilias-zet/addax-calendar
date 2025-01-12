@@ -6,6 +6,7 @@ import { getTaskListFromStorage } from './utils';
 import { useAppDispatch } from './hooks/redux-hooks';
 import { useEffect } from 'react';
 import { setTaskList } from './features/taskListSlice';
+import EditTask from './components/EditTask';
 
 const Container = styled.div`
   display: grid;
@@ -13,6 +14,7 @@ const Container = styled.div`
   grid-template-rows: 60px 30px 1fr;
   width: 100%;
   height: 100vh;
+  user-select: none;
 `;
 
 const Header = styled.header`
@@ -104,6 +106,7 @@ function App() {
         {selectedMonth.map((props) => <Cell {...props} key={props.id}></Cell>)}
         {nextMonth.map((props) => <Cell {...props} key={props.id}></Cell>)}
       </Main>
+      <EditTask />
     </Container>
   );
 }

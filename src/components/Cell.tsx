@@ -1,16 +1,17 @@
 import styled from "styled-components";
-import Task from "./Task";
+import Task, { TaskProps } from "./Task";
 import { useAppDispatch, useAppSelector } from "../hooks/redux-hooks";
 import { Fragment } from "react/jsx-runtime";
 import TaskSpace from "./TaskSpace";
 import useDropZone from "../hooks/useDropZone";
 import { daysInMonth } from "../utils";
 import { createNewTask } from "../features/editTaskSlice";
+import { Task as ITask } from "../types";
 
-const Container = styled.div<{ $disabled: boolean, $isCurrent: boolean }>`
+const Container = styled.div<{ $isCurrent: boolean }>`
   position: relative;
-  display: grid;
-  grid-template-rows: 24px 1fr;
+  display: flex;
+  flex-direction: column;
   padding: 4px;
   border-radius: 4px;
   gap: 4px;
@@ -20,9 +21,14 @@ const Container = styled.div<{ $disabled: boolean, $isCurrent: boolean }>`
   width: 100%;
   height: 100%;
   transition: border 0.5s;
-
-  ${({ $disabled }) =>  $disabled ? 'background-color: #ebebeb;' : 'border: 1px solid #cecece;'}
+  border: 1px solid #cecece;
   ${({ $isCurrent, theme }) => $isCurrent ? `border: 2px solid ${theme.palette.primary.main};` : ''}
+
+  &:hover {
+    & button {
+      opacity: 1;
+    }
+  }
 `;
 
 const Heading = styled.div`
@@ -54,18 +60,24 @@ const Date = styled.div<{ $isCurrent: boolean }>`
   }
 `;
 
-const CardsNumber = styled.span`
-  font-size: 12px;
-  color: #858585;
+const TaskWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border-radius: 4px;
+  gap: 2px;
+  padding-top: 2px;
+`;
+
+const DraggableTaskWrapper = styled(TaskWrapper)`
+  gap: 0px;
+  padding-top: 0;
 `;
 
 const DropZone = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
-  min-width: 0;
-  min-height: 0;
-  border-radius: 4px;
+  flex: 1;
   overflow-y: auto;
 `;
 
@@ -81,43 +93,64 @@ const AddTaskButton = styled.button`
   background-color: #e3e5e6;
   color: #4e4742;
   font-weight: bold;
+  opacity: 0;
+  transition: opacity 0.3s;
 
   &:hover {
-    background-color: #d7d7d7;
+    background-color: ${({ theme }) => theme.palette.primary.main};
+    color: ${({ theme }) => theme.palette.primary.contrastText};
   }
 `;
 
 interface CellProps {
   id: string;
   date: Date;
+  holidays?: ITask[];
+  searchStr?: string;
   isCurrent?: boolean;
-  disabled?: boolean;
 }
 
 function Cell ({
   id,
   date,
+  searchStr = '',
+  holidays = [],
   isCurrent = false,
-  disabled = false,
 }: CellProps) {
-  const { handlers: dropZoneHandlers, v } = useDropZone(id);
   const taskList = useAppSelector(state => state.tasklist);
+  const selectedTask = useAppSelector(state => state.selectTask.task);
   const dispatch = useAppDispatch();
   const tasks = taskList[id] || [];
+  const { handlers: dropZoneHandlers, v } = useDropZone(id, tasks.length);
 
-  const getTasks = () => {
+  const getDraggableTasks = () => {
     if (tasks.length === 0) return (<TaskSpace cellId={id} idx={0} key={`${id}-first-${v}`} />);
     else {
       return tasks
         .map((task, idx) => (
           <Fragment key={task.id}>
             <TaskSpace cellId={id} idx={idx} key={`${id}-top-${v}`} />
-            <Task task={task} cellId={id} idx={idx} />
+            <Task task={task} cellId={id} idx={idx} selected={task === selectedTask} />
           </Fragment>
         ))
         .concat(<TaskSpace cellId={id} idx={tasks.length} key={`${id}-last-${v}`} />);
     }
   }
+
+  const getTasks = (tasks: ITask[], props: Partial<TaskProps> = {}) => {
+    return tasks.map((task, idx) => (
+      <Task
+        idx={idx}
+        key={task.id}
+        task={task}
+        cellId={id}
+        draggable={false}
+        {...props}
+      />
+    ));
+  }
+
+  const searchResults = searchStr && tasks.filter(task => task.title.toLowerCase().includes(searchStr.toLocaleLowerCase()));
 
   const day = date.getDate();
   const dateTitle = day === 1 || day === daysInMonth(date)
@@ -125,15 +158,19 @@ function Cell ({
     : day;
 
   return (
-    <Container $disabled={disabled} $isCurrent={isCurrent}>
+    <Container $isCurrent={isCurrent}>
       <Heading>
         <Date $isCurrent={isCurrent}>{dateTitle}</Date>
-        { !disabled && tasks.length ? <CardsNumber>{tasks.length} card(s)</CardsNumber> : null }
-        <AddTaskButton onClick={() => dispatch(createNewTask({ cellId: id }))}>︙</AddTaskButton>
+        <AddTaskButton onClick={() => dispatch(createNewTask({ cellId: id }))}>+</AddTaskButton>
       </Heading>
-        <DropZone {...dropZoneHandlers}>
-          {getTasks()}
-        </DropZone>
+      <DropZone {...dropZoneHandlers}>
+        {!!holidays.length && <TaskWrapper>{getTasks(holidays, { holiday: true })}</TaskWrapper>}
+        {
+          searchResults
+            ? <TaskWrapper>{getTasks(searchResults)}</TaskWrapper>
+            : <DraggableTaskWrapper>{getDraggableTasks()}</DraggableTaskWrapper>
+        }
+      </DropZone>
     </Container>
   );
 }

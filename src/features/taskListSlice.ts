@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { Task } from '../types'
-import { arrayMove } from '../utils';
+import { arrayMove, getTaskInfo } from '../utils';
 
 interface MoveTaskPayload {
   fromCell: string;
@@ -38,9 +38,14 @@ export const taskListSlice = createSlice({
       } else {
         cell.push(task);
       }
+    },
+    deleteTask: (state, { payload: task }: PayloadAction<Task>) => {
+      const { idx, cellId } = getTaskInfo(task.id, state);
+      if (idx === -1 || !cellId) return;
+      state[cellId].splice(idx, 1);
     }
   },
 })
 
-export const { setTaskList, moveTask, createOrUpdateTask } = taskListSlice.actions;
+export const { setTaskList, moveTask, createOrUpdateTask, deleteTask } = taskListSlice.actions;
 export default taskListSlice.reducer;

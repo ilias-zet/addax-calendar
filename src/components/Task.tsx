@@ -2,12 +2,12 @@ import styled from "styled-components";
 import { useAppDispatch } from "../hooks/redux-hooks";
 import { Task as ITask } from '../types';
 import { setDragTask, setDragToIndex } from "../features/draggingSlice";
+import { deselectTask, setSelectedTask } from "../features/selectTaskSlice";
 
-const Container = styled.div`
-  cursor: grab;
+const Container = styled.div<{ $selected: boolean, $holiday: boolean }>`
+  cursor: pointer;
   position: relative;
-  display: grid;
-  grid-template-columns: 24px 1fr;
+  display: flex;
   min-height: 24px;
   align-items: center;
   width: 100%;
@@ -15,23 +15,35 @@ const Container = styled.div`
   font-size: 13px;
   line-height: 1;
   border-radius: 4px;
+  border: 1px solid ${({ $holiday, theme }) => $holiday ? theme.palette.primary.main : 'transparent'};
+
+  ${({ $selected, theme }) => $selected && `
+    background-color: ${theme.palette.primary.main};
+    color: ${theme.palette.primary.contrastText};
+  `}
 `;
 
-const Grabbable = styled.div`
-  width: 24px;
-  height: 24px;
+const Draggable = styled.div<{ $selected: boolean }>`
+  min-width: 24px;
+  height: 100%;
   font-size: 18px;
   color: #858585;
   text-align: center;
   align-content: center;
+
+  ${({ $selected, theme }) => $selected && `
+    color: ${theme.palette.primary.contrastText};
+  `}
 `;
 
-const TaskTitle = styled.div`
+const TaskTitle = styled.div<{ $pl: boolean }>`
   overflow: hidden;
   text-overflow: ellipsis;
   height: 100%;
   align-content: center;
   white-space: nowrap;
+  padding-right: 10px;
+  ${({ $pl }) => $pl ? 'padding-left: 10px;' : ''};
 `;
 
 const TopHalf = styled.div`
@@ -46,13 +58,25 @@ const BottomHalf = styled(TopHalf)`
   bottom: 0;
 `;
 
-interface TaskProps {
+export interface TaskProps {
   cellId: string;
   task: ITask;
   idx: number;
+  holiday?: boolean;
+  selected?: boolean;
+  draggable?: boolean;
+  selectable?: boolean;
 }
 
-function Task({ cellId, task, idx }: TaskProps) {
+function Task({
+  cellId,
+  task,
+  idx,
+  holiday = false,
+  selected = false,
+  draggable = true,
+  selectable = true,
+}: TaskProps) {
   const dispatch = useAppDispatch();
 
   const selectIndex = (toIdx: number) => (e: React.DragEvent<HTMLDivElement>) => {
@@ -60,16 +84,26 @@ function Task({ cellId, task, idx }: TaskProps) {
     dispatch(setDragToIndex(toIdx));
   }
 
+  const draggableProps = {
+    draggable: true,
+    onDragStart: () => dispatch(setDragTask({ task, cellId, idx })),
+    onDragEnd: () => dispatch(setDragTask(null)),
+    onClick: () => selectable && (selected
+      ? dispatch(deselectTask())
+      : dispatch(setSelectedTask({ task }))
+    ),
+  }
+
   return (
-    <Container
-      draggable={true}
-      onDragStart={() => dispatch(setDragTask({ task, cellId, idx }))}
-      onDragEnd={() => dispatch(setDragTask(null))}
-    >
-      <Grabbable>⠿</Grabbable>
-      <TaskTitle>{task.title}</TaskTitle>
-      <TopHalf onDragEnter={selectIndex(idx)}/>
-      <BottomHalf onDragEnter={selectIndex(idx + 1)}/>
+    <Container $selected={selected} $holiday={holiday} {...draggable ? draggableProps : {}}>
+      {draggable && <Draggable $selected={selected}>⠿</Draggable>}
+      <TaskTitle $pl={!draggable}>{task.title}</TaskTitle>
+      {
+        draggable && (<>
+          <TopHalf onDragEnter={selectIndex(idx)}/>
+          <BottomHalf onDragEnter={selectIndex(idx + 1)}/>
+        </>)
+      }
     </Container>
   );
 }

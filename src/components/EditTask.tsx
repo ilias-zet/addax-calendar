@@ -5,6 +5,7 @@ import { MouseEventHandler, useId } from "react";
 import { closeEditor } from "../features/editTaskSlice";
 import { createOrUpdateTask } from "../features/taskListSlice";
 import { isWhitespace } from "../utils";
+import Button from "./Button";
 
 const Form = styled.form`
   display: flex;
@@ -47,37 +48,6 @@ const ButtonsContainer = styled.div`
   align-self: flex-end;
 `;
 
-const Button = styled.button`
-  cursor: pointer;
-  border: none;
-  height: 32px;
-  border-radius: 4px;
-  padding: 0 16px;
-  color: #4e4742;
-  background-color: #e4e6e7;
-  &:hover {
-    background-color: #d1d6d6;
-  }
-`;
-
-const CancelButton = styled(Button)`
-  color: ${({ theme }) => theme.palette.danger.contrastText};
-  background-color: ${({ theme }) => theme.palette.danger.main};
-
-  &:hover {
-    background-color: ${({ theme }) => theme.palette.danger.dark};
-  }
-`;
-
-const SubmitButton = styled(Button)`
-  color: ${({ theme }) => theme.palette.primary.contrastText};
-  background-color: ${({ theme }) => theme.palette.primary.main};
-
-  &:hover {
-    background-color: ${({ theme }) => theme.palette.primary.dark};
-  }
-`;
-
 function EditTask() {
   const { task, cellId, editMode } = useAppSelector(state => state.editTask);
   const dispatch = useAppDispatch();
@@ -111,11 +81,11 @@ function EditTask() {
         </div>
         <div>
           <label htmlFor={descriptionInputId}>Description:</label>
-          <Textarea name="description" id={descriptionInputId} defaultValue={task?.title} />
+          <Textarea name="description" id={descriptionInputId} defaultValue={task?.description} />
         </div>
         <ButtonsContainer>
-          <CancelButton type="button" onClick={closeEditorHandler}>Cancel</CancelButton>
-          <SubmitButton type="submit">Save</SubmitButton>
+          <Button color="danger" type="button" variant="outlined" onClick={closeEditorHandler}>Cancel</Button>
+          <Button type="submit">Save</Button>
         </ButtonsContainer>
       </Form>
     </Backdrop>

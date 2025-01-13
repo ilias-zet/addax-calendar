@@ -15,10 +15,6 @@ const Space = styled.div<{ $active: boolean }>`
       min-height: 24px;
       border-color: ${theme.palette.primary.main};
       margin: 2px 0;
-
-      &:first-child {
-        margin: 0 0 2px;
-      }
     ` 
     : 'border-color: transparent'};
 `;

@@ -1,5 +1,4 @@
 const theme = {
-  borderRadius: '4px',
   palette: {
     primary: {
       main: '#002fff',
@@ -14,4 +13,6 @@ const theme = {
   }
 }
 
+export type Theme = typeof theme;
+export type ThemePaletteColor = keyof Theme['palette'];
 export default theme;

@@ -4,7 +4,7 @@ import { moveTask } from "../features/taskListSlice";
 import { isMovementAllowed } from "../utils";
 import { useAppDispatch, useAppSelector } from "./redux-hooks";
 
-const useDropZone = (cellId: string) => {
+const useDropZone = (cellId: string, lastIdx: number) => {
   const counterRef = useRef<number>(0); // used to preventing drag event from firing on child elements 
   const [v, setV] = useState(0); // version of task order in current cell
   const dispatch = useAppDispatch();
@@ -16,7 +16,7 @@ const useDropZone = (cellId: string) => {
     counterRef.current++;
     if (counterRef.current === 1) {
       dispatch(setDragOverCell(cellId));
-      dispatch(setDragToIndex(0));
+      dispatch(setDragToIndex(lastIdx));
     }
   }
   const onDragLeave: DragEventHandler = (e) => {

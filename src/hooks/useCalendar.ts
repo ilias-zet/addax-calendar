@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getDateString } from "../utils";
 
 const currentDate = new Date();
@@ -6,6 +6,11 @@ const currentDate = new Date();
 function useCalendar () {
   const currentYear = currentDate.getFullYear();
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+
+  useEffect(() => {
+    setSelectedYear(selectedMonthStart.getFullYear());
+  }, [selectedMonth]);
 
   const selectedMonthStart = new Date(currentYear, selectedMonth, 1);
 
@@ -18,20 +23,21 @@ function useCalendar () {
   const selectedMonthAndYear = selectedMonthStart.toLocaleString('default', { year: 'numeric', month: 'long' });
 
   const prevRest = selectedMonthStart.getDay();
-  const nextRest = (prevRest + daysInSelectedMonth >= 35 ? 6 : 13) - selectedMonthEnd.getDay();
+  const nextRest = 6 - selectedMonthEnd.getDay();
 
   const showNext = () => {
-    setSelectedMonth(prev => prev + 1)
+    setSelectedMonth(prev => prev + 1);
   }
 
   const showPrev = () => {
-    setSelectedMonth(prev => prev - 1)
+    setSelectedMonth(prev => prev - 1);
   }
 
   return {
     title: selectedMonthAndYear,
     showNext,
     showPrev,
+    selectedYear,
     days: {
       prevMonth: [...new Array(prevRest)].map((_, idx) => {
         const day = daysInPrevMonth - (prevRest - idx - 1);

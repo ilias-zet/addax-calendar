@@ -1,4 +1,5 @@
 import { TaskList } from "./features/taskListSlice";
+import { store } from "./store";
 
 export function daysInMonth(date: Date): number;
 export function daysInMonth(month: number, year: number): number ;
@@ -22,7 +23,7 @@ export function getDateString (dayOrDate: number | Date, month?: number, year?: 
     date = new Date(year!, month!, dayOrDate);
   }
   
-  return date.toLocaleString('default', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return date.toLocaleDateString('en-ca');
 }
 
 export const isMovementAllowed = (fromCell: string, toCell: string, fromIdx: number, toIdx: number) => {
@@ -64,3 +65,43 @@ export const generateId = () => {
 }
 
 export const isWhitespace = (str: string) =>  /^\s*$/.test(str);
+
+interface Holiday {
+  date: string;
+  localName: string;
+  name: string;
+  countryCode: string;
+  global: true;
+  counties: string[];
+  launchYear: number;
+  types: string[];
+}
+
+export const getTaskInfo = (taskId: string, taskList?: TaskList) => {
+  const list = taskList || store.getState().tasklist;
+  for (const [cellId, array] of Object.entries(list)) {
+    const idx = array.findIndex(obj => obj.id === taskId);
+    if (idx !== -1) return { cellId, idx, task: array[idx] };
+  }
+  return { cellId: '', idx: -1, task: null };
+}
+
+export const getHolidays = async (year: number): Promise<TaskList> => {
+  try {
+    const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/ua`);
+    const holidays = await response.json() as Holiday[];
+    return holidays
+      .filter(({ global }) => global)
+      .reduce((acc, { name: title, date }) => ({
+        ...acc,
+        [date]: (acc[date] || []).concat({
+          id: generateId(),
+          title,
+          description: ''
+        }),
+      }), {} as TaskList);
+  } catch (err) {
+    console.error(err);
+    return {};
+  }
+}

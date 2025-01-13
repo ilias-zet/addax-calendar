@@ -79,11 +79,11 @@ function EditTask() {
         <Title>{editMode ? 'Edit task' : 'Create new task'}</Title>
         <div>
           <label htmlFor={titleInputId}>Title:</label>
-          <Input name="title" id={titleInputId} defaultValue={task?.title} />
+          {task && <Input name="title" id={titleInputId} defaultValue={task.title} />}
         </div>
         <div>
           <label htmlFor={descriptionInputId}>Description:</label>
-          <Textarea name="description" id={descriptionInputId} defaultValue={task?.description} />
+          {task && <Textarea name="description" id={descriptionInputId} defaultValue={task.description} />}
         </div>
         <ButtonsContainer>
           <Button color="danger" type="button" variant="outlined" onClick={closeEditorHandler}>Cancel</Button>

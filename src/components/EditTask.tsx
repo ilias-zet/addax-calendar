@@ -1,7 +1,7 @@
 import styled, { css } from "styled-components";
 import Backdrop from "./Backdrop";
 import { useAppDispatch, useAppSelector } from "../hooks/redux-hooks";
-import { MouseEventHandler, useId } from "react";
+import { FormEventHandler, MouseEventHandler, useId } from "react";
 import { closeEditor } from "../features/editTaskSlice";
 import { createOrUpdateTask } from "../features/taskListSlice";
 import { isWhitespace } from "../utils";
@@ -54,8 +54,10 @@ function EditTask() {
   const titleInputId = useId();
   const descriptionInputId = useId();
 
-  const saveChanges = (formData: FormData) => {
+  const saveChanges: FormEventHandler<HTMLFormElement> = (e) => {
+    e.preventDefault();
     if (!task || !cellId) return;
+    const formData = new FormData(e.currentTarget);
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
     if (isWhitespace(title)) return alert(`Title can't be empty`);
@@ -73,7 +75,7 @@ function EditTask() {
       open={Boolean(task && cellId)}
       onClick={closeEditorHandler}
     >
-      <Form action={saveChanges} onClick={(e) => e.stopPropagation()}>
+      <Form onSubmit={saveChanges} onClick={(e) => e.stopPropagation()}>
         <Title>{editMode ? 'Edit task' : 'Create new task'}</Title>
         <div>
           <label htmlFor={titleInputId}>Title:</label>

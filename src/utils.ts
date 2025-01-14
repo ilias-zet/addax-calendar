@@ -22,8 +22,11 @@ export function getDateString (dayOrDate: number | Date, month?: number, year?: 
   } else {
     date = new Date(year!, month!, dayOrDate);
   }
-  
-  return date.toLocaleDateString('en-ca');
+
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 export const isMovementAllowed = (fromCell: string, toCell: string, fromIdx: number, toIdx: number) => {

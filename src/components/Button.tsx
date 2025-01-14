@@ -27,7 +27,7 @@ const buttonVariantStyle = (color: ThemePaletteColor, variant: ButtonVariant) =>
     hoverBg: theme.palette[color].dark,
   },
   outlined: {
-    bg: 'none',
+    bg: 'transparent',
     color: theme.palette[color].main,
     border: `1px solid ${theme.palette[color].main}`,
     hoverBg: '#00000010',

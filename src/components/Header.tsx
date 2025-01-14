@@ -33,6 +33,7 @@ const CurrentMonth = styled.span`
 `;
 
 const Input = styled.input`
+  font-size: 14px;
   height: 32px;
   outline: none;
   width: 300px;

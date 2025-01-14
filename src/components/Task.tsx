@@ -5,6 +5,7 @@ import { setDragTask, setDragToIndex } from "../features/draggingSlice";
 import { deselectTask, setSelectedTask } from "../features/selectTaskSlice";
 
 const Container = styled.div<{ $selected: boolean, $holiday: boolean }>`
+  user-select: none;
   cursor: pointer;
   position: relative;
   display: flex;
@@ -30,6 +31,7 @@ const Draggable = styled.div<{ $selected: boolean }>`
   color: #858585;
   text-align: center;
   align-content: center;
+  padding: 2px;
 
   ${({ $selected, theme }) => $selected && `
     color: ${theme.palette.primary.contrastText};
@@ -42,8 +44,9 @@ const TaskTitle = styled.div<{ $pl: boolean }>`
   height: 100%;
   align-content: center;
   white-space: nowrap;
-  padding-right: 10px;
-  ${({ $pl }) => $pl ? 'padding-left: 10px;' : ''};
+  font-size: 14px;
+  line-height: 1;
+  padding: 4px 10px 4px ${({ $pl }) => $pl ? '10px;' : '0'};
 `;
 
 const TopHalf = styled.div`
